@@ -1,7 +1,8 @@
 $(function () {
 	// 按下回车 把完整的数据 存储到本地存储里面
 	// 存储的数据格式[{"content":"111","completed":false}]
-	load();
+	var status = 0;
+	load(0);
 	$("input").on("keydown", function (event) {
 		if (event.keyCode === 13) {
 			if ($(this).val() === "") {
@@ -17,10 +18,34 @@ $(function () {
 				// 把这个数组local存储到本地存储
 				saveData(local);
 				// 2.toDoList 本地存储数据渲染加载到页面
-				load();
+				load(0);
 				$(this).val();
 			}
 		}
+	});
+	// 3.todolist 删除操作
+	$("ul").on("click", ".close-btn", function () {
+		// 先获取本地存储
+		var data = getData();
+		// 修改数据
+		var index = $(this).attr("id");
+		data.splice(index, 1);
+		// 保存到本地存储
+		saveData(data);
+		// 重新渲染页面
+		load(0);
+	});
+	// 4.todolist 正在进行和已完成选项的操作
+	$("ul").on("click", "input", function () {
+		// 先获取本地存储
+		var data = getData();
+		// 修改数据
+		var index = $(this).siblings(".close-btn").attr("id");
+		data[index].completed = $(this).prop("checked");
+		// 保存到本地存储
+		saveData(data);
+		// 重新渲染页面
+		load(0);
 	});
 	// 读取本地存储的数据
 	function getData() {
@@ -37,7 +62,13 @@ $(function () {
 		localStorage.setItem("todos", JSON.stringify(data));
 	}
 	// 渲染加载数据
-	function load() {
+	/**
+	 *
+	 * @param {index} status 0是全部 1是未完成 2是已完成
+	 */
+	function load(status) {
+		this.status = status;
+		console.log(this.status);
 		// 读取本地存储的数据
 		var data = getData();
 		$("ul").empty();
@@ -49,22 +80,26 @@ $(function () {
 		if (Array.isArray(data) && data.length !== 0) {
 			$.each(data, function (i, n) {
 				if (!n.completed) {
-					$("ul").prepend(
-						`<li class='todos-item'>
-                            <input type='checkbox' class='checkbox-btn'>
-                            <p class='content'>${n.title}</p>
-                            <button class='close-btn'><svg class='svg-inline--fa fa-times fa-w-11 close' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='times' role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 352 512' data-v-132cabf7=''><path class='' fill='currentColor' d='M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z'></path></svg></button>
-                        </li>`
-					);
+					if (status === 0 || status === 1) {
+						$("ul").prepend(
+							`<li class='todos-item'>
+                                <input type='checkbox' class='checkbox-btn'>
+                                <p class='content'>${n.title}</p>
+                                <button class='close-btn' id='${i}'><svg class='svg-inline--fa fa-times fa-w-11 close' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='times' role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 352 512' data-v-132cabf7=''><path class='' fill='currentColor' d='M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z'></path></svg></button>
+                            </li>`
+						);
+					}
 					todoCount++;
 				} else {
-					$("ul").prepend(
-						`<li class='todos-item completed'>
-                            <input type='checkbox' checked='checked' class='checkbox-btn'>
-                            <p class='content'>${n.title}</p>
-                            <button class='close-btn'><svg class='svg-inline--fa fa-times fa-w-11 close' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='times' role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 352 512' data-v-132cabf7=''><path class='' fill='currentColor' d='M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z'></path></svg></button>
-                        </li>`
-					);
+					if (status === 0 || status === 2) {
+						$("ul").prepend(
+							`<li class='todos-item completed'>
+                                <input type='checkbox' checked='checked' class='checkbox-btn'>
+                                <p class='content'>${n.title}</p>
+                                <button class='close-btn' id='${i}'><svg class='svg-inline--fa fa-times fa-w-11 close' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='times' role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 352 512' data-v-132cabf7=''><path class='' fill='currentColor' d='M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z'></path></svg></button>
+                            </li>`
+						);
+					}
 					completeCound++;
 				}
 			});
@@ -72,11 +107,10 @@ $(function () {
 				`<div class='out'>
                     <span>${todoCount} item left</span>
                     <div class="filters">
-                        <span class="option active">All</span>
-                        <span class="option">Active</span>
-                        <span class="option">Completed</span>
-                    </div>
-                    <span class="option">Clear completed</span>
+                        <span class="option option0 ${status === 0 ? "active" : ""}">All</span>` +
+					(completeCound > 0 && todoCount > 0 ? `<span class="option option1 ${status === 1 ? "active" : ""}">Active</span>` + `<span class="option option2 ${status === 2 ? "active" : ""}">Completed</span>` : "") +
+					`</div>
+                    ${completeCound > 0 ? '<span class="option option3">Clear completed</span>' : ""}
                 </div>`
 			);
 		} else {
@@ -87,5 +121,34 @@ $(function () {
                 </div>`
 			);
 		}
+
+		// 6.查看全部的
+		$(".option0").click((e) => {
+			load(0);
+			e.stopPropagation();
+		});
+		// 6.查看未完成的
+		$(".option1").click((e) => {
+			load(1);
+			e.stopPropagation();
+		});
+		// 7.查看已完成的
+		$(".option2").click((e) => {
+			load(2);
+			e.stopPropagation();
+		});
+		$(".option3").click((e) => {
+			var data = getData();
+			var tempData = [];
+			if (Array.isArray(data) && data.length !== 0) {
+				$.each(data, function (i, n) {
+					if (!n.completed) {
+						tempData.push(n);
+					}
+				});
+			}
+			saveData(tempData);
+			load(0);
+		});
 	}
 });
