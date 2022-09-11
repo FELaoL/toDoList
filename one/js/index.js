@@ -1,7 +1,6 @@
 $(function () {
 	// 按下回车 把完整的数据 存储到本地存储里面
 	// 存储的数据格式[{"content":"111","completed":false}]
-	var status = 0;
 	load(0);
 	$("input").on("keydown", function (event) {
 		if (event.keyCode === 13) {
@@ -23,6 +22,24 @@ $(function () {
 			}
 		}
 	});
+	$(".submit").click(function () {
+		if ($(this).siblings("input").val() === "") {
+			return;
+		} else {
+			// 先读取本地存储原来的数据
+			var local = getData();
+			// 把local数组进行更新数据，把最新的数据追加到local数组
+			local.push({
+				title: $(this).siblings("input").val(),
+				completed: false
+			});
+			// 把这个数组local存储到本地存储
+			saveData(local);
+			// 2.toDoList 本地存储数据渲染加载到页面
+			load(0);
+			$(this).siblings("input").val("");
+		}
+	});
 	// 3.todolist 删除操作
 	$("ul").on("click", ".close-btn", function () {
 		// 先获取本地存储
@@ -33,7 +50,14 @@ $(function () {
 		// 保存到本地存储
 		saveData(data);
 		// 重新渲染页面
-		load(0);
+		var completeData = data.filter((item) => item.completed);
+		if (completeData.length !== data.length && window.status - 0 === 2 && completeData.length !== 0) {
+			load(2);
+		} else if (window.status - 0 === 1) {
+			load(1);
+		} else {
+			load(0);
+		}
 	});
 	// 4.todolist 正在进行和已完成选项的操作
 	$("ul").on("click", "input", function () {
@@ -45,7 +69,14 @@ $(function () {
 		// 保存到本地存储
 		saveData(data);
 		// 重新渲染页面
-		load(0);
+		var completeData = data.filter((item) => item.completed);
+		if (completeData.length !== data.length && window.status - 0 === 2 && completeData.length !== 0) {
+			load(2);
+		} else if (window.status - 0 === 1) {
+			load(1);
+		} else {
+			load(0);
+		}
 	});
 	// 读取本地存储的数据
 	function getData() {
@@ -67,8 +98,7 @@ $(function () {
 	 * @param {index} status 0是全部 1是未完成 2是已完成
 	 */
 	function load(status) {
-		this.status = status;
-		console.log(this.status);
+		window.status = status;
 		// 读取本地存储的数据
 		var data = getData();
 		$("ul").empty();
