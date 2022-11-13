@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="./css/index.css" />
+		<script src="./js/jquery-3.6.1.min.js"></script>
+		<script src="./js/template-web.js"></script>
+		<title>Todos App</title>
+	</head>
+	<body>
+		<div class="dialog">
+			<header>
+				<img src="./img/icon1.svg" alt="" />
+				<div class="title">To-Do List</div>
+			</header>
+			<div class="form">
+				<h1>~ Today I need to ~</h1>
+				<form>
+					<input type="text" placeholder="Add new todo..." id="task" />
+					<button type="button" class="submit">Submit</button>
+				</form>
+			</div>
+			<ul class="todos"></ul>
+			<div class="menus"></div>
+		</div>
+		<script type="text/html" id="taskTpl">
+			{{each tasks}}
+			<li class="todos-item  {{$value.completed ? 'completed' : ''}}">
+				<input type="checkbox" class="checkbox-btn" {{$value.completed ? 'checked' : ''}} />
+				<p class="content">{{$value.title}}</p>
+				<button class="close-btn" data-id="{{$value._id}}">
+					<svg class="svg-inline--fa fa-times fa-w-11 close" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+				</button>
+			</li>
+			{{/each}}
+		</script>
+		<script type="text/html" id="taskFooterTpl">
+			<div class="out">
+				<span>{{todoCount}} item left</span>
+				<div class="filters">
+					<span class="option option0 {{status === 0 ? 'active' : ''}}">All</span>
+					{{if completeCount > 0 && todoCount > 0}}
+					<span class="option option1 {{status === 1 ? 'active' : ''}}">Active</span>
+					<span class="option option2 {{status === 2 ? 'active' : ''}}">Completed</span>
+					{{/if}}
+				</div>
+				{{if completeCount > 0}}
+				<span class="option option3">Clear completed</span>
+				{{/if}}
+			</div>
+		</script>
+		<script type="text/javascript">
+			// 用于存放任务列表的数组
+			var taskArr = [];
+			// 选择任务列表容器
+			var taskBox = $(".todos");
+			// 添加任务的文本框
+			var taskInp = $("#task");
+			var menus = $(".menus");
+			// 向服务器端发送请求，获取已经存在的任务
+			$.ajax({
+				url: "/todo/task",
+				type: "get",
+				success: function (response) {
+					// 将已存在的任务存储在taskArr变量中
+					taskArr = response;
+					// 拼接字符串，将拼接好的字符串显示在页面中
+					render(0);
+				}
+			});
+
+			// 获取文本框并且添加键盘抬起事件
+			taskInp.on("keydown", function (event) {
+				// 如果用户敲击的是回车键
+				if (event.keyCode === 13) {
+					// 判断用户是否在文本框中输入了任务名称
+					var taskName = $(this).val();
+					// 如果用户没有在文本框中输入内容
+					if (taskName.trim().length === 0) {
+						alert("请输入任务名称");
+						// 阻止代码向下执行
+						return;
+					}
+					// 向服务器端发送请求，添加任务
+					$.ajax({
+						type: "post",
+						url: "/todo/addTask",
+						contentType: "application/json",
+						data: JSON.stringify({ title: taskName }),
+						success: function (response) {
+							// 将任务添加到任务列表中
+							taskArr.push(response);
+							// 拼接字符串，将拼接好的字符串显示在页面中
+							render(0);
+							// 清空文本框中的内容
+							taskInp.val("");
+						},
+						error: function (err) {
+							alert(err.responseJSON.message);
+						}
+					});
+				}
+			});
+
+			$(".submit").click(function () {
+				// 判断用户是否在文本框中输入了任务名称
+				var taskName = $(this).siblings("input").val();
+				// 如果用户没有在文本框中输入内容
+				if (taskName.trim().length === 0) {
+					alert("请输入任务名称");
+					// 阻止代码向下执行
+					return;
+				}
+				// 向服务器端发送请求，添加任务
+				$.ajax({
+					type: "post",
+					url: "/todo/addTask",
+					contentType: "application/json",
+					data: JSON.stringify({ title: taskName }),
+					success: function (response) {
+						// 将任务添加到任务列表中
+						taskArr.push(response);
+						// 拼接字符串，将拼接好的字符串显示在页面中
+						render(0);
+						// 清空文本框中的内容
+						taskInp.val("");
+					},
+					error: function (err) {
+						alert(err.responseJSON.message);
+					}
+				});
+			});
+
+			// 拼接字符串，将拼接好的字符串显示在页面中
+			function render(status) {
+				window.status = status;
+				$.ajax({
+					type: "get",
+					url: "/todo/unCompletedTaskCount",
+					contentType: "application/json",
+					success: function (response) {
+						var todoCount = response.num;
+						var completeCount = taskArr.length - todoCount;
+						let resultArr = [];
+						if (status - 0 === 0) {
+							resultArr = taskArr;
+						}
+						if (status - 0 === 1) {
+							resultArr = taskArr.filter(item => !item.completed);
+						}
+						if (status - 0 === 2) {
+							resultArr = taskArr.filter(item => item.completed);
+						}
+						// 字符串拼接
+						var html = template("taskTpl", {
+							tasks: resultArr
+						});
+						// 将拼接好的字符串显示在ul标签中
+						taskBox.html(html);
+						var htmlFooter = template("taskFooterTpl", {
+							todoCount,
+							completeCount,
+							status
+						});
+						menus.html(htmlFooter);
+					}
+				});
+			}
+
+			// 当用户点击删除按钮时触发ul标签身上的点击事件
+			taskBox.on("click", ".close-btn", function () {
+				// 要删除的任务的id
+				var id = $(this).attr("data-id");
+				// 向服务器端发送请求删除任务
+				$.ajax({
+					url: "/todo/deleteTask",
+					type: "get",
+					data: {
+						_id: id
+					},
+					success: function (response) {
+						// 从任务数组中找到已经删除掉的任务的索引
+						var index = taskArr.findIndex(item => item._id == id);
+						// 将任务从数组中删除
+						taskArr.splice(index, 1);
+						// 重新将任务数组中的元素显示在页面中
+						var completeData = taskArr.filter(item => item.completed);
+						if (completeData.length !== taskArr.length && window.status - 0 === 2 && completeData.length !== 0) {
+							render(2);
+						} else if (window.status - 0 === 1) {
+							render(1);
+						} else {
+							render(0);
+						}
+					}
+				});
+			});
+
+			// 当用户改变任务名称前面的复选框状态时触发
+			taskBox.on("change", ".checkbox-btn", function () {
+				// 代表复选框是否选中 true选中 false未选中的
+				const status = $(this).is(":checked");
+				// 当前点击任务的id
+				const id = $(this).siblings("button").attr("data-id");
+				// 向服务器端发送请求 更改任务状态
+				$.ajax({
+					type: "post",
+					url: "/todo/modifyTask",
+					data: JSON.stringify({ _id: id, completed: status }),
+					contentType: "application/json",
+					success: function (response) {
+						// 将任务状态同步到任务数组中
+						var task = taskArr.find(item => item._id == id);
+						// 更改任务状态
+						task.completed = response.completed;
+						// 将数组中任务的最新状态更新到页面中
+						var completeData = taskArr.filter(item => item.completed);
+						if (completeData.length !== taskArr.length && window.status - 0 === 2 && completeData.length !== 0) {
+							render(2);
+						} else if (window.status - 0 === 1) {
+							render(1);
+						} else {
+							render(0);
+						}
+						// 计算未完成任务数量
+						// calcCount();
+					}
+				});
+			});
+
+			// 6.查看全部的
+			menus.on("click", ".option0", function (e) {
+				render(0);
+				e.stopPropagation();
+			});
+
+			// 7.查看未完成的
+			menus.on("click", ".option1", function (e) {
+				render(1);
+				e.stopPropagation();
+			});
+
+			// 7.查看已完成的
+			menus.on("click", ".option2", function (e) {
+				render(2);
+				e.stopPropagation();
+			});
+
+			menus.on("click", ".option3", function (e) {
+				$.ajax({
+					type: "get",
+					url: "/todo/clearTask",
+					contentType: "application/json",
+					success: function (response) {
+						taskArr = taskArr.filter(item => !item.completed);
+						render(0);
+					}
+				});
+				e.stopPropagation();
+			});
+		</script>
+	</body>
+</html>
