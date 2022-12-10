@@ -18,7 +18,7 @@
 			<div class="form">
 				<h1>~ Today I need to ~</h1>
 				<form>
-					<input type="text" placeholder="Add new todo..." v-model="inputVal" @keydown.13.prevent="saveData" s />
+					<input type="text" placeholder="Add new todo..." v-model="inputVal" @keydown.13.prevent="saveData" />
 					<button type="button" class="submit" @click.prevent="saveData">Submit</button>
 				</form>
 			</div>
@@ -101,7 +101,6 @@
 					},
 					visible: {
 						handler: function (val) {
-							console.log(val);
 							if (!val) {
 								this.$nextTick(() => {
 									this.visible = true;

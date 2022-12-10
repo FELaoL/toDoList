@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="./css/index.css" />
+		<script src="./js/jquery-3.6.1.min.js"></script>
+		<script src="./js/index.js"></script>
+		<title>Todos App</title>
+	</head>
+	<body>
+		<div class="dialog" id="app">
+			<my-header @save-data="saveData"></my-header>
+			<my-list :page-data="pageData" :visible="visible" @change-check-box="changeCheckBox" @del-data="delData"></my-list>
+			<my-footer :all-data="allData" :status="status" :complete-cound="completeCound" :todo-count="todoCount" @filter-data="filterData" @clear-completed="clearCompleted"></my-footer>
+		</div>
+		<script src="./js/vue.js"></script>
+		<script>
+			var myHeader = {
+				data() {
+					return {
+						inputVal: ""
+					};
+				},
+				template: `
+			                     <div>
+			                 <header>
+			                     <img src="./img/icon1.svg" alt="" />
+			                     <div class="title">To-Do List</div>
+			                 </header>
+			                 <div class="form">
+			                     <h1>~ Today I need to ~</h1>
+			                     <form>
+			                         <input type="text" placeholder="Add new todo..." v-model="inputVal" @keydown.13.prevent="saveData" />
+			                         <button type="button" class="submit" @click.prevent="saveData">Submit</button>
+			                     </form>
+			                 </div>
+			                     </div>
+			             `,
+				methods: {
+					saveData() {
+						if (this.inputVal === "") return;
+						this.$emit("save-data", this.inputVal);
+						this.inputVal = "";
+					}
+				}
+			};
+			var myList = {
+				props: ["pageData", "visible"],
+				template: `
+			            <ul class="todos" v-if="visible">
+			                <li :class="{completed: item.completed}" class="todos-item" v-for="(item, index) in pageData" :key="index">
+			                    <input type="checkbox" class="checkbox-btn" :checked="item.completed" @click="(e)=>$emit('change-check-box', index, e.target.checked)" />
+			                    <p class="content">{{ item.title }}</p>
+			                    <button class="close-btn" @click="$emit('del-data', item.id)">
+			                        <svg class="svg-inline--fa fa-times fa-w-11 close" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+			                    </button>
+			                </li>
+			            </ul>
+			    `,
+				methods: {}
+			};
+			var myFooter = {
+				props: ["allData", "status", "completeCound", "todoCount"],
+				template: `
+			                 <div class="menus">
+			                     <div class="empty" v-if="allData.length === 0">
+			                         <svg class="svg-inline--fa fa-clipboard-check fa-w-12 icon" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="clipboard-check" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M336 64h-80c0-35.3-28.7-64-64-64s-64 28.7-64 64H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zM192 40c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24zm121.2 231.8l-143 141.8c-4.7 4.7-12.3 4.6-17-.1l-82.6-83.3c-4.7-4.7-4.6-12.3.1-17L99.1 285c4.7-4.7 12.3-4.6 17 .1l46 46.4 106-105.2c4.7-4.7 12.3-4.6 17 .1l28.2 28.4c4.7 4.8 4.6 12.3-.1 17z"></path></svg>
+			                         <span class="msg">Congrat, you have no more tasks to do</span>
+			                     </div>
+			                     <div class="out" v-else>
+			                         <span>{{todoCount}} item left</span>
+			                         <div class="filters">
+			                             <span class="option option0" :class="{active: status=== 0}" @click="$emit('filter-data', 0)">All</span>
+			                             <span class="option option1" v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 1}" @click="$emit('filter-data', 1)">Active</span>
+			                             <span class="option option2" v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 2}" @click="$emit('filter-data', 2)">Completed</span>
+			                         </div>
+			                         <span class="option option3" v-if="completeCound > 0" @click="$emit('clear-completed')">Clear completed</span>
+			                     </div>
+			                 </div>
+			             `
+			};
+			var vm = new new Vue({
+				el: "#app",
+				components: {
+					"my-header": myHeader,
+					"my-list": myList,
+					"my-footer": myFooter
+				},
+				data() {
+					return {
+						allData: [],
+						pageData: [],
+						status: 0,
+						visible: false
+					};
+				},
+				watch: {
+					allData: {
+						handler: function () {
+							if (this.status === 0) {
+								this.pageData = this.allData;
+							}
+							if (this.status === 1) {
+								this.pageData = this.allData.filter(item => {
+									return !item.completed;
+								});
+							}
+							if (this.status === 2) {
+								this.pageData = this.allData.filter(item => {
+									return item.completed;
+								});
+							}
+						},
+						immediate: true,
+						deep: true
+					},
+					status: {
+						handler: function (val) {
+							if (val === 0) {
+								this.pageData = this.allData;
+							}
+							if (val === 1) {
+								this.pageData = this.allData.filter(item => {
+									return !item.completed;
+								});
+							}
+							if (val === 2) {
+								this.pageData = this.allData.filter(item => {
+									return item.completed;
+								});
+							}
+						},
+						immediate: true,
+						deep: true
+					},
+					visible: {
+						handler: function (val) {
+							if (!val) {
+								this.$nextTick(() => {
+									this.visible = true;
+								});
+							}
+						},
+						immediate: true,
+						deep: true
+					}
+				},
+				computed: {
+					todoCount() {
+						return this.allData.length;
+					},
+					completeCound() {
+						const arr = this.allData.filter(item => {
+							return item.completed;
+						});
+						return arr.length;
+					}
+				},
+				methods: {
+					saveData(val) {
+						const index = Math.random();
+						this.allData.push({
+							id: index,
+							title: val,
+							completed: false
+						});
+					},
+					changeCheckBox(index, value) {
+						this.pageData[index].completed = value;
+						this.visible = false;
+					},
+					delData(id) {
+						this.allData = this.allData.filter(item => {
+							return item.id !== id;
+						});
+					},
+					filterData(status) {
+						this.status = status;
+					},
+					clearCompleted() {
+						this.allData = this.allData.filter(item => {
+							return !item.completed;
+						});
+					}
+				}
+			})();
+		</script>
+	</body>
+</html>
