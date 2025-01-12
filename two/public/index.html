@@ -18,17 +18,17 @@
 			<div class="form">
 				<h1>~ Today I need to ~</h1>
 				<form>
-					<input type="text" placeholder="Add new todo..." id="task" />
-					<button type="button" class="submit">Submit</button>
+					<input id="task" type="text" placeholder="Add new todo..." />
+					<button class="submit" type="button">Submit</button>
 				</form>
 			</div>
 			<ul class="todos"></ul>
 			<div class="menus"></div>
 		</div>
-		<script type="text/html" id="taskTpl">
+		<script id="taskTpl" type="text/html">
 			{{each tasks}}
 			<li class="todos-item  {{$value.completed ? 'completed' : ''}}">
-				<input type="checkbox" class="checkbox-btn" {{$value.completed ? 'checked' : ''}} />
+				<input class="checkbox-btn" {{$value.completed ? 'checked' : ''}} type="checkbox" />
 				<p class="content">{{$value.title}}</p>
 				<button class="close-btn" data-id="{{$value._id}}">
 					<svg class="svg-inline--fa fa-times fa-w-11 close" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
@@ -36,7 +36,7 @@
 			</li>
 			{{/each}}
 		</script>
-		<script type="text/html" id="taskFooterTpl">
+		<script id="taskFooterTpl" type="text/html">
 			<div class="out">
 				<span>{{todoCount}} item left</span>
 				<div class="filters">
@@ -148,10 +148,10 @@
 							resultArr = taskArr;
 						}
 						if (status - 0 === 1) {
-							resultArr = taskArr.filter(item => !item.completed);
+							resultArr = taskArr.filter((item) => !item.completed);
 						}
 						if (status - 0 === 2) {
-							resultArr = taskArr.filter(item => item.completed);
+							resultArr = taskArr.filter((item) => item.completed);
 						}
 						// 字符串拼接
 						var html = template("taskTpl", {
@@ -182,11 +182,11 @@
 					},
 					success: function (response) {
 						// 从任务数组中找到已经删除掉的任务的索引
-						var index = taskArr.findIndex(item => item._id == id);
+						var index = taskArr.findIndex((item) => item._id == id);
 						// 将任务从数组中删除
 						taskArr.splice(index, 1);
 						// 重新将任务数组中的元素显示在页面中
-						var completeData = taskArr.filter(item => item.completed);
+						var completeData = taskArr.filter((item) => item.completed);
 						if (completeData.length !== taskArr.length && window.status - 0 === 2 && completeData.length !== 0) {
 							render(2);
 						} else if (window.status - 0 === 1) {
@@ -212,11 +212,11 @@
 					contentType: "application/json",
 					success: function (response) {
 						// 将任务状态同步到任务数组中
-						var task = taskArr.find(item => item._id == id);
+						var task = taskArr.find((item) => item._id == id);
 						// 更改任务状态
 						task.completed = response.completed;
 						// 将数组中任务的最新状态更新到页面中
-						var completeData = taskArr.filter(item => item.completed);
+						var completeData = taskArr.filter((item) => item.completed);
 						if (completeData.length !== taskArr.length && window.status - 0 === 2 && completeData.length !== 0) {
 							render(2);
 						} else if (window.status - 0 === 1) {
@@ -254,7 +254,7 @@
 					url: "/todo/clearTask",
 					contentType: "application/json",
 					success: function (response) {
-						taskArr = taskArr.filter(item => !item.completed);
+						taskArr = taskArr.filter((item) => !item.completed);
 						render(0);
 					}
 				});

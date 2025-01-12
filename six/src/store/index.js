@@ -4,6 +4,7 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+	modules: {},
 	state: {
 		// 所有的任务列表
 		list: [],
@@ -12,6 +13,24 @@ export default new Vuex.Store({
 		// 下一个id
 		nextId: 0,
 		status: 0
+	},
+	getters: {
+		// 统计未完成的任务条数
+		unDoneLength(state) {
+			return state.list.length;
+		},
+		// 统计已完成的数量
+		completeCount(state) {
+			return state.list.filter(item => {
+				return item.completed;
+			}).length;
+		},
+		infoList(state) {
+			if (state.status === 0) return state.list;
+			if (state.status === 1) return state.list.filter(x => !x.completed);
+			if (state.status === 2) return state.list.filter(x => x.completed);
+			return state.list;
+		}
 	},
 	mutations: {
 		// 为store中的inputValue赋值
@@ -50,24 +69,5 @@ export default new Vuex.Store({
 			state.list = state.list.filter(x => x.completed === false);
 		}
 	},
-	actions: {},
-	modules: {},
-	getters: {
-		// 统计未完成的任务条数
-		unDoneLength(state) {
-			return state.list.length;
-		},
-		// 统计已完成的数量
-		completeCount(state) {
-			return state.list.filter(item => {
-				return item.completed;
-			}).length;
-		},
-		infoList(state) {
-			if (state.status === 0) return state.list;
-			if (state.status === 1) return state.list.filter(x => !x.completed);
-			if (state.status === 2) return state.list.filter(x => x.completed);
-			return state.list;
-		}
-	}
+	actions: {}
 });

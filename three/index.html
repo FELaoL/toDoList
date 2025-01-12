@@ -10,7 +10,7 @@
 		<title>Todos App</title>
 	</head>
 	<body>
-		<div class="dialog" id="app">
+		<div id="app" class="dialog">
 			<header>
 				<img src="./img/icon1.svg" alt="" />
 				<div class="title">To-Do List</div>
@@ -18,13 +18,13 @@
 			<div class="form">
 				<h1>~ Today I need to ~</h1>
 				<form>
-					<input type="text" placeholder="Add new todo..." v-model="inputVal" @keydown.13.prevent="saveData" />
-					<button type="button" class="submit" @click.prevent="saveData">Submit</button>
+					<input v-model="inputVal" type="text" placeholder="Add new todo..." @keydown.13.prevent="saveData" />
+					<button class="submit" type="button" @click.prevent="saveData">Submit</button>
 				</form>
 			</div>
-			<ul class="todos" v-if="visible">
-				<li :class="{completed: item.completed}" class="todos-item" v-for="(item, index) in pageData" :key="index">
-					<input type="checkbox" class="checkbox-btn" :checked="item.completed" @click="(e)=>changeCheckBox(e, index)" />
+			<ul v-if="visible" class="todos">
+				<li v-for="(item, index) in pageData" :class="{completed: item.completed}" class="todos-item" :key="index">
+					<input class="checkbox-btn" :checked="item.completed" type="checkbox" @click="(e)=>changeCheckBox(e, index)" />
 					<p class="content">{{ item.title }}</p>
 					<button class="close-btn" @click="delData(item.id)">
 						<svg class="svg-inline--fa fa-times fa-w-11 close" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
@@ -32,18 +32,18 @@
 				</li>
 			</ul>
 			<div class="menus">
-				<div class="empty" v-if="allData.length === 0">
+				<div v-if="allData.length === 0" class="empty">
 					<svg class="svg-inline--fa fa-clipboard-check fa-w-12 icon" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="clipboard-check" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-v-132cabf7=""><path class="" fill="currentColor" d="M336 64h-80c0-35.3-28.7-64-64-64s-64 28.7-64 64H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48zM192 40c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24zm121.2 231.8l-143 141.8c-4.7 4.7-12.3 4.6-17-.1l-82.6-83.3c-4.7-4.7-4.6-12.3.1-17L99.1 285c4.7-4.7 12.3-4.6 17 .1l46 46.4 106-105.2c4.7-4.7 12.3-4.6 17 .1l28.2 28.4c4.7 4.8 4.6 12.3-.1 17z"></path></svg>
 					<span class="msg">Congrat, you have no more tasks to do</span>
 				</div>
-				<div class="out" v-else>
+				<div v-else class="out">
 					<span>{{todoCount}} item left</span>
 					<div class="filters">
-						<span class="option option0" :class="{active: status=== 0}" @click="filterData(0)">All</span>
-						<span class="option option1" v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 1}" @click="filterData(1)">Active</span>
-						<span class="option option2" v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 2}" @click="filterData(2)">Completed</span>
+						<span :class="{active: status=== 0}" class="option option0" @click="filterData(0)">All</span>
+						<span v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 1}" class="option option1" @click="filterData(1)">Active</span>
+						<span v-if="completeCound > 0 && todoCount > 0" :class="{active: status=== 2}" class="option option2" @click="filterData(2)">Completed</span>
 					</div>
-					<span class="option option3" v-if="completeCound > 0" @click="clearCompleted">Clear completed</span>
+					<span v-if="completeCound > 0" class="option option3" @click="clearCompleted">Clear completed</span>
 				</div>
 			</div>
 		</div>
@@ -60,6 +60,17 @@
 						visible: false
 					};
 				},
+				computed: {
+					todoCount() {
+						return this.allData.length;
+					},
+					completeCound() {
+						const arr = this.allData.filter((item) => {
+							return item.completed;
+						});
+						return arr.length;
+					}
+				},
 				watch: {
 					allData: {
 						handler: function () {
@@ -67,12 +78,12 @@
 								this.pageData = this.allData;
 							}
 							if (this.status === 1) {
-								this.pageData = this.allData.filter(item => {
+								this.pageData = this.allData.filter((item) => {
 									return !item.completed;
 								});
 							}
 							if (this.status === 2) {
-								this.pageData = this.allData.filter(item => {
+								this.pageData = this.allData.filter((item) => {
 									return item.completed;
 								});
 							}
@@ -86,12 +97,12 @@
 								this.pageData = this.allData;
 							}
 							if (val === 1) {
-								this.pageData = this.allData.filter(item => {
+								this.pageData = this.allData.filter((item) => {
 									return !item.completed;
 								});
 							}
 							if (val === 2) {
-								this.pageData = this.allData.filter(item => {
+								this.pageData = this.allData.filter((item) => {
 									return item.completed;
 								});
 							}
@@ -111,17 +122,6 @@
 						deep: true
 					}
 				},
-				computed: {
-					todoCount() {
-						return this.allData.length;
-					},
-					completeCound() {
-						const arr = this.allData.filter(item => {
-							return item.completed;
-						});
-						return arr.length;
-					}
-				},
 				methods: {
 					changeCheckBox(e, index) {
 						this.pageData[index].completed = e.target.checked;
@@ -138,7 +138,7 @@
 						this.inputVal = "";
 					},
 					delData(id) {
-						this.allData = this.allData.filter(item => {
+						this.allData = this.allData.filter((item) => {
 							return item.id !== id;
 						});
 					},
@@ -146,7 +146,7 @@
 						this.status = status;
 					},
 					clearCompleted() {
-						this.allData = this.allData.filter(item => {
+						this.allData = this.allData.filter((item) => {
 							return !item.completed;
 						});
 					}
